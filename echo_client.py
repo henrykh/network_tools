@@ -19,7 +19,6 @@ def client_server(msg):
 
     while not complete:
         msg_part = client_socket.recv(buffer_size).decode('utf-8')
-        print msg_part
         if len(msg_part) < buffer_size:
             complete = True
             client_socket.close()

@@ -27,7 +27,8 @@ try:
         if msg:
             msg += '"'
             conn.sendall(msg.encode('utf-8'))
-            msg, msg_part = [""]*2
+            msg, msg_part = ['Echo: ', '']
+            conn.close()
 
 except KeyboardInterrupt:
-    conn.close()
+    server_socket.close()
