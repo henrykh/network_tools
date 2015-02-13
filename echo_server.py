@@ -1,13 +1,39 @@
 from __future__ import unicode_literals
 import socket
+import os
+from mimetypes import guess_type
 
+ROOT_DIR = "{}/root".format(os.curdir())
+
+def resolve_uri(uri):
+    response = ""
+
+    if os.path.isdir(uri):
+        response = os.listdir(uri)
+    elif os.path.isfile(uri):
+        file_type = guess_type(uri)
+        try:
+            f = open(uri, 'r')
+            return f.read()
+        except IOError as e:
+            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+
+
+    else:
+        return response_error(404, 'Resource Not Found')
+
+
+    # if uri is a directory, return HTML listing of that directory as body
+    # if the resources is a file, return the contents of the file
+        #content type value should be related to the type of the file
+    # if the requested resource cannot be found, raise an appropriate error
 
 def response_ok(uri):
     response = []
     response.append("HTTP/1.1 200 OK")
     response.append("Content-Type = text/html; charset=utf-8")
     response.append("")
-    response.append(uri)
+    response.append(resolve_uri(uri))
 
     response = "\r\n".join(response).encode("utf-8")
     return response
