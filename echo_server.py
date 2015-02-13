@@ -5,20 +5,27 @@ from mimetypes import guess_type
 
 ROOT_DIR = "{}/root".format(os.curdir())
 
+
 def resolve_uri(uri):
-    response = ""
+    path = "{}{}".format(ROOT_DIR, uri)
 
-    if os.path.isdir(uri):
-        response = os.listdir(uri)
-    elif os.path.isfile(uri):
-        file_type = guess_type(uri)
+    # if uri is a directory, return HTML listing of that directory as body
+    if os.path.isdir(path):
+        directory_html = (["<li>{}</li>".format(item) for item in os.listdir(path)], "text/html")
+        directory_html.insert(0, "<ul>")
+        directory_html.insert(len(directory_html)-1, "</ul>")
+        return "\n".join(directory_html)
+
+     # if the resources is a file, return the contents of the file
+    elif os.path.isfile(path):
+        file_type = guess_type(path)
         try:
-            f = open(uri, 'r')
-            return f.read()
-        except IOError as e:
-            print "I/O error({0}): {1}".format(e.errno, e.strerror)
+            f = open(path, 'r')
+            return (f.read(), file_type)
+        except IOError:
+            return response_error(403, 'Accesss Denied')
 
-
+    # if the requested resource cannot be found, raise an appropriate error
     else:
         return response_error(404, 'Resource Not Found')
 
@@ -30,10 +37,12 @@ def resolve_uri(uri):
 
 def response_ok(uri):
     response = []
+    resolved_uri = resolve_uri(uri)
     response.append("HTTP/1.1 200 OK")
-    response.append("Content-Type = text/html; charset=utf-8")
+    response.append("Content-Type = {}; charset=utf-8".format(resolved_uri[1]))
+    response.append("Content-Length = {}".format(len(resolved_uri[0])))
     response.append("")
-    response.append(resolve_uri(uri))
+    response.append(resolved_uri[0])
 
     response = "\r\n".join(response).encode("utf-8")
     return response
