@@ -24,8 +24,8 @@ def resolve_uri(uri):
     elif os.path.isfile(path):
         file_type = guess_type(path)[0]
         try:
-            f = open(path, 'r')
-            return (f.read(), file_type)
+            with open(path, 'r') as f:
+                return (f.read(), file_type)
         except IOError:
             raise IOError("Access Denied")
 
