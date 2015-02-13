@@ -9,14 +9,18 @@ ROOT_DIR = "root"
 def resolve_uri(uri):
     path = "{}{}".format(ROOT_DIR, uri)
 
+    if ".." in path:
+        raise IOError("Access Denied")
+
     # if uri is a directory, return HTML listing of that directory as body
-    if os.path.isdir(path):
+    elif os.path.isdir(path):
         directory_html = ["<li>{}</li>".format(item) for item in os.listdir(path)]
         directory_html.insert(0, "<ul>")
         directory_html.insert(len(directory_html), "</ul>")
         return ("\n".join(directory_html), "text/html")
 
     # if the resources is a file, return the contents of the file
+
     elif os.path.isfile(path):
         file_type = guess_type(path)[0]
         try:

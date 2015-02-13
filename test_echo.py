@@ -48,14 +48,22 @@ def test_returns_directory_listing():
     assert response[2] == "Content-Length = 29"
     assert "\n".join(response[4:]) == "<ul>\n<li>test.html</li>\n</ul>"
 
+
 def test_file_not_found():
     response = client_server('''GET /test_wrong.html HTTP/1.1\r\n
             Host: henryhowes.com\r\n
             Content-Type: text/xml; charset=utf-8\r\n
             ''').splitlines()
-    print response
     response_first_line = response[0].split()
 
     assert response_first_line[1] == '404'
 
 
+def test_file_above_root():
+    response = client_server('''GET ../echo_client.py HTTP/1.1\r\n
+            Host: henryhowes.com\r\n
+            Content-Type: text/xml; charset=utf-8\r\n
+            ''').splitlines()
+    response_first_line = response[0].split()
+
+    assert response_first_line[1] == "403"
