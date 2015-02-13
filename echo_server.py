@@ -3,22 +3,22 @@ import socket
 import os
 from mimetypes import guess_type
 
-ROOT_DIR = "{}/root".format(os.curdir())
+ROOT_DIR = "root".format()
 
 
 def resolve_uri(uri):
     path = "{}{}".format(ROOT_DIR, uri)
-
+    
     # if uri is a directory, return HTML listing of that directory as body
     if os.path.isdir(path):
-        directory_html = (["<li>{}</li>".format(item) for item in os.listdir(path)], "text/html")
+        directory_html = ["<li>{}</li>".format(item) for item in os.listdir(path)]
         directory_html.insert(0, "<ul>")
-        directory_html.insert(len(directory_html)-1, "</ul>")
-        return "\n".join(directory_html)
+        directory_html.insert(len(directory_html), "</ul>")
+        return ("\n".join(directory_html), "text/html") 
 
      # if the resources is a file, return the contents of the file
     elif os.path.isfile(path):
-        file_type = guess_type(path)
+        file_type = guess_type(path)[0]
         try:
             f = open(path, 'r')
             return (f.read(), file_type)
@@ -39,7 +39,7 @@ def response_ok(uri):
     response = []
     resolved_uri = resolve_uri(uri)
     response.append("HTTP/1.1 200 OK")
-    response.append("Content-Type = {}; charset=utf-8".format(resolved_uri[1]))
+    response.append("Content-Type = {} ; charset=utf-8".format(resolved_uri[1]))
     response.append("Content-Length = {}".format(len(resolved_uri[0])))
     response.append("")
     response.append(resolved_uri[0])
