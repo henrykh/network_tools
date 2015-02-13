@@ -3,41 +3,43 @@ import socket
 import os
 from mimetypes import guess_type
 
-ROOT_DIR = "root".format()
+ROOT_DIR = "root"
 
 
 def resolve_uri(uri):
     path = "{}{}".format(ROOT_DIR, uri)
-    
+
     # if uri is a directory, return HTML listing of that directory as body
     if os.path.isdir(path):
         directory_html = ["<li>{}</li>".format(item) for item in os.listdir(path)]
         directory_html.insert(0, "<ul>")
         directory_html.insert(len(directory_html), "</ul>")
-        return ("\n".join(directory_html), "text/html") 
+        return ("\n".join(directory_html), "text/html")
 
-     # if the resources is a file, return the contents of the file
+    # if the resources is a file, return the contents of the file
     elif os.path.isfile(path):
         file_type = guess_type(path)[0]
         try:
             f = open(path, 'r')
             return (f.read(), file_type)
         except IOError:
-            return response_error(403, 'Accesss Denied')
+            raise IOError("Access Denied")
 
     # if the requested resource cannot be found, raise an appropriate error
     else:
-        return response_error(404, 'Resource Not Found')
+        raise IOError("File Not Found")
 
-
-    # if uri is a directory, return HTML listing of that directory as body
-    # if the resources is a file, return the contents of the file
-        #content type value should be related to the type of the file
-    # if the requested resource cannot be found, raise an appropriate error
 
 def response_ok(uri):
     response = []
-    resolved_uri = resolve_uri(uri)
+    try:
+        resolved_uri = resolve_uri(uri)
+    except IOError as excinfo:
+        if "Access Denied" in str(excinfo):
+            return response_error(403, 'Access Denied')
+        else:
+            return response_error(404, 'Resource Not Found')
+
     response.append("HTTP/1.1 200 OK")
     response.append("Content-Type = {} ; charset=utf-8".format(resolved_uri[1]))
     response.append("Content-Length = {}".format(len(resolved_uri[0])))
@@ -52,7 +54,7 @@ def response_error(error, error_msg):
     response = []
     response.append("HTTP/1.1 {} {}".format(error, error_msg))
     response.append("")
-    response.append("{} {}".format(error, error_msg))
+    response.append("<div>{} {}</div>".format(error, error_msg))
     response = "\r\n".join(response).encode("utf-8")
 
     return response
