@@ -1,5 +1,4 @@
 from __future__ import unicode_literals
-import socket
 from gevent.server import StreamServer
 from gevent.monkey import patch_all
 from echo_server import parse_request
